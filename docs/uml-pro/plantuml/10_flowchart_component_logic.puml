@@ -1,0 +1,30 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam activity {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Flowchart (Component Logic)
+
+start
+:Receive user profile;
+:Normalize units and values;
+:Compute BMI and classify goal;
+:Compute BMR and TDEE;
+:Set calorie and macro targets;
+:Retrieve candidate foods by diet type;
+:Filter by budget and meal slots;
+if (Targets met?) then (yes)
+  :Build final daily meal plan;
+else (no)
+  :Apply substitution rules;
+  :Re-balance macros;
+endif
+:Generate weekly fitness plan;
+:Create response payload;
+stop
+
+@enduml

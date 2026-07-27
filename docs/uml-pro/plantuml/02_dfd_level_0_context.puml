@@ -1,0 +1,25 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam rectangle {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+}
+skinparam database {
+  BorderColor #2A7A4B
+  BackgroundColor #F2FFF7
+}
+
+title NutriSense - DFD Level 0 (Context)
+
+rectangle "User" as User
+rectangle "NutriSense System\n(Context Process P0)" as System
+rectangle "Admin" as Admin
+
+User --> System : Profile Data\n(goal, diet type, budget)
+System --> User : Personalized Diet Plan\n+ Fitness Schedule
+
+Admin --> System : Food dataset updates\nrule refinements
+System --> Admin : Generation logs\nusage summaries
+
+@enduml

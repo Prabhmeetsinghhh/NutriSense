@@ -1,0 +1,34 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam node {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Deployment Diagram
+
+node "Client Device\n(Browser)" as Client {
+  artifact "React/Vite Frontend" as FE
+}
+
+node "Application Server" as AppServer {
+  artifact "FastAPI Backend" as BE
+  artifact "Diet Service Module" as DSM
+  artifact "Fitness Service Module" as FSM
+}
+
+node "Data Layer" as DataNode {
+  database "Indian Food Dataset" as FD
+  artifact "Rule Configs" as RC
+}
+
+Client --> AppServer : HTTPS REST API
+BE --> DSM : internal call
+BE --> FSM : internal call
+DSM --> FD : read meal data
+DSM --> RC : read rules
+FSM --> RC : read fitness rules
+
+@enduml

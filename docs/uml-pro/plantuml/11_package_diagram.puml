@@ -1,0 +1,33 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam package {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Package Diagram
+
+package "DietAndFitnessPlanner-FE" {
+  package "pages" as FE_Pages
+  package "routes" as FE_Routes
+  package "api" as FE_Api
+  package "theme/context" as FE_Theme
+}
+
+package "DietAndFitnessPlanner-BE" {
+  package "api" as BE_Api
+  package "services" as BE_Services
+  package "models" as BE_Models
+}
+
+FE_Pages ..> FE_Routes
+FE_Pages ..> FE_Api
+FE_Pages ..> FE_Theme
+FE_Api ..> BE_Api : REST/JSON
+BE_Api ..> BE_Services
+BE_Services ..> BE_Models
+
+@enduml

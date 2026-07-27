@@ -1,0 +1,13 @@
+{
+  "name": "minorproject-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm --prefix DietAndFitnessPlanner-FE run dev",
+    "build": "npm --prefix DietAndFitnessPlanner-FE run build",
+    "lint": "npm --prefix DietAndFitnessPlanner-FE run lint",
+    "preview": "npm --prefix DietAndFitnessPlanner-FE run preview",
+    "backend": "DietAndFitnessPlanner-BE\\.venv\\Scripts\\python.exe -m uvicorn app.main:app --app-dir DietAndFitnessPlanner-BE --host 127.0.0.1 --port 8001 --reload",
+    "backend:check": "DietAndFitnessPlanner-BE\\.venv\\Scripts\\python.exe -c \"import sys; sys.path.insert(0, r'DietAndFitnessPlanner-BE'); from app.main import app; print('backend import ok')\""
+  }
+}

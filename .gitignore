@@ -1,0 +1,21 @@
+# Python virtual environments
+DietAndFitnessPlanner-BE/.venv/
+DietAndFitnessPlanner-BE/venv/
+/.venv/
+
+
+# Python cache
+**/__pycache__/
+*.pyc
+
+# Local environment secrets
+DietAndFitnessPlanner-BE/.env
+
+# Node modules
+DietAndFitnessPlanner-FE/node_modules/
+
+# Build artifacts
+DietAndFitnessPlanner-FE/dist/
+
+# Temporary document processing folders
+*_tmp/

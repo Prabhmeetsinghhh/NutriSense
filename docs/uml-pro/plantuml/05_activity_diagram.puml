@@ -1,0 +1,41 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam activity {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Activity Diagram (End-to-End)
+
+start
+:Open application;
+if (Authenticated?) then (yes)
+else (no)
+  :Register/Login;
+endif
+
+:Enter profile details;
+:Choose goal, diet type, budget;
+
+if (Input valid?) then (yes)
+  :Compute BMI/BMR/TDEE;
+  :Derive macro targets;
+  fork
+    :Generate meal recommendations;
+    :Apply diet/budget filters;
+  fork again
+    :Generate weekly workout plan;
+  end fork
+  :Assemble final response;
+  :Render plan on UI;
+  :Optional download/save;
+  stop
+else (no)
+  :Show validation errors;
+  :Correct inputs;
+  -> Enter profile details;
+endif
+
+@enduml

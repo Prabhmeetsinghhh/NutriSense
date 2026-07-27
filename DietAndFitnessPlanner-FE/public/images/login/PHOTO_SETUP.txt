@@ -1,0 +1,21 @@
+LOGIN BACKGROUND PHOTO SETUP
+
+Put your photos in this folder with these exact names:
+1) login-left.jpg
+2) login-right.jpg
+
+Current login page behavior:
+- Left panel (desktop only): /images/login/login-left.jpg
+- Right panel (desktop and mobile): /images/login/login-right.jpg
+
+If these files are missing, the page automatically falls back to:
+- /images/arnold.webp
+- /images/Ronnie.webp
+
+Recommended image size:
+- 1400x1800 or higher
+- JPG or WEBP format
+
+After adding/replacing photos:
+- Save files
+- Refresh browser (Ctrl+F5 for hard refresh)

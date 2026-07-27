@@ -1,0 +1,44 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #1F4E79
+  LifeLineBorderColor #1F4E79
+  ParticipantBorderColor #1F4E79
+  ParticipantBackgroundColor #F8FBFF
+}
+
+title NutriSense - Sequence Diagram (Generate Plan)
+
+actor User
+participant "React UI" as UI
+participant "API Router\n(FastAPI)" as API
+participant "DietService" as DS
+participant "FitnessService" as FS
+database "Food Dataset" as FD
+
+User -> UI : Submit profile + constraints
+UI -> API : POST /generate-plan(payload)
+API -> API : Validate request schema
+
+alt Invalid payload
+  API --> UI : 422 Validation Error
+  UI --> User : Show field-specific errors
+else Valid payload
+  API -> DS : generate_diet_plan(input)
+  DS -> DS : calculate_bmi_tdee_macros()
+  DS -> FD : fetch_candidates(diet,budget)
+  FD --> DS : candidate food items
+  DS -> DS : optimize meal allocation
+  DS --> API : structured meal plan
+
+  API -> FS : generate_weekly_workout(input)
+  FS -> FS : map goal to split/intensity
+  FS --> API : workout schedule
+
+  API -> API : compose final response
+  API --> UI : 200 OK + diet + fitness + metrics
+  UI --> User : Render cards/tables/charts
+end
+
+@enduml

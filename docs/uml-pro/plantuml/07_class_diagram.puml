@@ -1,0 +1,87 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam class {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Class Diagram
+
+class UserProfile {
+  +userId: UUID
+  +name: str
+  +age: int
+  +heightCm: float
+  +weightKg: float
+  +goal: str
+  +dietType: str
+  +budgetTier: str
+}
+
+class NutritionTarget {
+  +bmi: float
+  +tdee: float
+  +calorieTarget: int
+  +proteinTarget: float
+  +carbTarget: float
+  +fatTarget: float
+}
+
+class MealOption {
+  +foodId: UUID
+  +name: str
+  +mealType: str
+  +dietType: str
+  +calories: int
+  +proteinG: float
+  +cost: float
+}
+
+class MealPlan {
+  +items: List<MealOption>
+  +totalCalories: int
+  +totalProtein: float
+  +totalCost: float
+}
+
+class WorkoutDay {
+  +day: str
+  +focus: str
+  +durationMin: int
+  +intensity: str
+}
+
+class FitnessPlan {
+  +weekPlan: List<WorkoutDay>
+  +notes: str
+}
+
+class IndianDietService {
+  +calculate_bmi(profile): float
+  +calculate_targets(profile): NutritionTarget
+  +generate_meal_plan(profile): MealPlan
+}
+
+class FitnessService {
+  +generate_weekly_plan(profile): FitnessPlan
+}
+
+class ApiRouter {
+  +generate_plan_endpoint(payload): Response
+}
+
+UserProfile --> NutritionTarget : derives
+NutritionTarget --> MealPlan : constrains
+MealPlan "1" *-- "many" MealOption
+FitnessPlan "1" *-- "many" WorkoutDay
+IndianDietService ..> UserProfile
+IndianDietService ..> NutritionTarget
+IndianDietService ..> MealPlan
+FitnessService ..> UserProfile
+FitnessService ..> FitnessPlan
+ApiRouter ..> IndianDietService
+ApiRouter ..> FitnessService
+
+@enduml

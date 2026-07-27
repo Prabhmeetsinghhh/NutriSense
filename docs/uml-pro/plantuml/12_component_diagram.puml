@@ -1,0 +1,39 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam component {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Component Diagram
+
+actor User
+
+component "Landing/Login Module" as C1
+component "User Profile Form Module" as C2
+component "Plan Result Module" as C3
+component "Axios API Client" as C4
+component "FastAPI Router" as C5
+component "Diet Service" as C6
+component "Fitness Service" as C7
+component "Indian Foods Data Provider" as C8
+
+User --> C1
+User --> C2
+User --> C3
+C1 --> C4
+C2 --> C4
+C3 --> C4
+C4 --> C5 : HTTP POST /generate-plan
+C5 --> C6
+C5 --> C7
+C6 --> C8
+C6 --> C5 : diet result
+C7 --> C5 : fitness result
+C5 --> C4 : unified response
+C4 --> C3 : render data
+
+@enduml

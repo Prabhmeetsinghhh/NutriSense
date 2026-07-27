@@ -1,0 +1,42 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam rectangle {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+}
+skinparam database {
+  BorderColor #2A7A4B
+  BackgroundColor #F2FFF7
+}
+
+title NutriSense - DFD Level 1
+
+rectangle "External Entity\nUser" as E1
+rectangle "P1 Input & Validation" as P1
+rectangle "P2 Nutrition\nComputation" as P2
+rectangle "P3 Meal Recommendation\nEngine" as P3
+rectangle "P4 Fitness Plan\nEngine" as P4
+rectangle "P5 Response\nComposer" as P5
+
+database "D1 Food Dataset" as D1
+database "D2 Rule Base\n(Protein/Calorie/Budget)" as D2
+database "D3 Generated\nPlan Output" as D3
+
+E1 --> P1 : User profile + constraints
+P1 --> P2 : Validated anthropometric data
+P1 --> P3 : Diet preference + budget
+P2 --> P3 : Macro targets\n(BMI/TDEE/protein)
+P2 --> P4 : Goal + intensity targets
+P3 --> D1 : Fetch candidate foods
+D1 --> P3 : Food items + nutrition values
+P3 --> D2 : Apply rule checks
+D2 --> P3 : Feasible meal combinations
+P4 --> D2 : Workout template lookup
+D2 --> P4 : Weekly plan templates
+P3 --> P5 : Structured meal plan
+P4 --> P5 : Structured workout plan
+P5 --> D3 : Save final output
+P5 --> E1 : Personalized result JSON
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam activity {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - Control Flow Diagram
+
+start
+:Trigger Generate Plan Action;
+:Check Authentication Token;
+if (Token valid?) then (yes)
+  :Validate Profile Payload;
+  if (Payload valid?) then (yes)
+    :Invoke DietService;
+    if (Meal options found?) then (yes)
+      :Invoke FitnessService;
+      :Compose Unified Response;
+      :Return HTTP 200;
+      stop
+    else (no)
+      :Fallback Recommendation Policy;
+      :Return constrained result + warning;
+      stop
+    endif
+  else (no)
+    :Return HTTP 422\n(validation errors);
+    stop
+  endif
+else (no)
+  :Return HTTP 401\n(re-auth required);
+  stop
+endif
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml
+hide circle
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+
+title NutriSense - ER Diagram
+
+entity UserProfile {
+  * user_id : UUID <<PK>>
+  --
+  name : varchar
+  age : int
+  gender : varchar
+  height_cm : decimal
+  weight_kg : decimal
+  activity_level : varchar
+  fitness_level : varchar
+  goal : varchar
+  diet_type : varchar
+  budget_tier : varchar
+  created_at : datetime
+}
+
+entity NutritionTarget {
+  * target_id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  bmi : decimal
+  bmr : decimal
+  tdee : decimal
+  calorie_target : int
+  protein_target_g : decimal
+  carbs_target_g : decimal
+  fats_target_g : decimal
+}
+
+entity MealCatalog {
+  * food_id : UUID <<PK>>
+  --
+  meal_name : varchar
+  meal_type : varchar
+  diet_type : varchar
+  calories : int
+  protein_g : decimal
+  carbs_g : decimal
+  fats_g : decimal
+  estimated_cost : decimal
+}
+
+entity DailyMealPlan {
+  * meal_plan_id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  target_id : UUID <<FK>>
+  date_generated : datetime
+  total_cost : decimal
+  total_calories : int
+  total_protein_g : decimal
+}
+
+entity MealPlanItem {
+  * item_id : UUID <<PK>>
+  --
+  meal_plan_id : UUID <<FK>>
+  food_id : UUID <<FK>>
+  slot : varchar
+  portion_multiplier : decimal
+}
+
+entity FitnessPlan {
+  * fitness_plan_id : UUID <<PK>>
+  --
+  user_id : UUID <<FK>>
+  date_generated : datetime
+  weekly_structure : text
+  intensity : varchar
+}
+
+UserProfile ||--|| NutritionTarget : derives
+UserProfile ||--o{ DailyMealPlan : gets
+DailyMealPlan ||--o{ MealPlanItem : contains
+MealCatalog ||--o{ MealPlanItem : referenced_by
+UserProfile ||--o{ FitnessPlan : receives
+NutritionTarget ||--o{ DailyMealPlan : guides
+
+@enduml

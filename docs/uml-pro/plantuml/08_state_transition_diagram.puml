@@ -1,0 +1,31 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam state {
+  BorderColor #1F4E79
+  BackgroundColor #F8FBFF
+  ArrowColor #1F4E79
+}
+
+title NutriSense - State Transition Diagram
+
+[*] --> Idle
+Idle --> Authenticated : loginSuccess
+Idle --> Idle : loginFailed
+
+Authenticated --> ProfileEntry : startPlan
+ProfileEntry --> Validation : submitDetails
+Validation --> ProfileEntry : invalidInput
+Validation --> Computing : validInput
+
+Computing --> DietGenerated : dietReady
+Computing --> ErrorState : computeException
+DietGenerated --> FitnessGenerated : fitnessReady
+FitnessGenerated --> PlanReady : composeDone
+PlanReady --> Displayed : renderUI
+Displayed --> Downloaded : exportPlan
+Displayed --> ProfileEntry : editInputs
+Downloaded --> [*]
+ErrorState --> ProfileEntry : retry
+
+@enduml
