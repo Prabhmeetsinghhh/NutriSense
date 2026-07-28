@@ -443,6 +443,7 @@ def generate_plan(data: dict):
         fitness_level = data.get("fitnessLevel", "intermediate")
         budget_preference = data.get("budget_preference", "value")
         diet_type = data.get("dietType", "veg")
+        target_weight = _to_int_or_none(data.get("targetWeight") or data.get("target_weight"))
         injury_notes = str(data.get("injury_notes", "")).strip()
         avoid_exercises = data.get("avoid_exercises", [])
         equipment_access = data.get("equipment_access", [])
@@ -493,6 +494,7 @@ def generate_plan(data: dict):
             goal=goal,
             budget_preference=budget_preference,
             diet_type=diet_preference,
+            target_weight=target_weight,
         )
 
         bmi = round(IndianDietService.calculate_bmi(weight, height_cm), 1)
@@ -523,6 +525,7 @@ def generate_plan(data: dict):
             "daily_totals": diet_plan_raw["daily_totals"],
             "bmi": bmi,
             "goal": goal,
+            "goal_context": diet_plan_raw.get("goal_context", {}),
             "experience": fitness_level,
             "diet_preference": diet_preference,
             "daily_budget_hint": diet_plan_raw["budget_tier"]["name"],

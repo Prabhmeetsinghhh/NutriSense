@@ -156,7 +156,7 @@ const LandingPage = () => {
               >
                 <Button
                   variant="contained"
-                  onClick={() => navigate("/about")}
+                  onClick={() => navigate("/login")}
                   sx={{
                     textTransform: "none",
                     px: 3,

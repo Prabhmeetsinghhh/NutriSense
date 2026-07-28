@@ -344,6 +344,54 @@ class IndianDietService:
         return macros
 
     @staticmethod
+    def _resolve_effective_goal(goal: str, current_weight: int | None = None, target_weight: int | None = None) -> str:
+        """Resolve an effective nutrition goal that respects target-weight direction."""
+        normalized = str(goal or "maintenance").lower()
+        if current_weight is not None and target_weight is not None and target_weight < current_weight:
+            if normalized in {"muscle_gain", "gain", "maintenance", "maintain", "muscle_endurance", "endurance"}:
+                return "weight_loss"
+        if normalized in {"fat_loss", "loss", "weight_loss"}:
+            return "weight_loss"
+        if normalized in {"muscle_gain", "gain"}:
+            return "muscle_gain"
+        if normalized in {"maintenance", "maintain"}:
+            return "maintenance"
+        if normalized in {"muscle_endurance", "endurance"}:
+            return "muscle_endurance"
+        return "maintenance"
+
+    @staticmethod
+    def _normalize_daily_plan_to_targets(daily_plan: Dict[str, Dict[str, Any]], target_calories: int, target_protein: float, goal: str) -> None:
+        """Align each meal's calories and macros to the target daily plan without changing the meal structure."""
+        meal_weights = {
+            "breakfast": 0.24,
+            "lunch": 0.30,
+            "snack": 0.16,
+            "dinner": 0.30,
+        }
+        if goal == "weight_loss":
+            meal_weights = {"breakfast": 0.25, "lunch": 0.30, "snack": 0.15, "dinner": 0.30}
+
+        protein_targets = {meal: target_protein * weight for meal, weight in meal_weights.items()}
+        calorie_targets = {meal: target_calories * weight for meal, weight in meal_weights.items()}
+
+        carb_ratio = 0.45 if goal == "weight_loss" else (0.50 if goal == "muscle_gain" else 0.50)
+        fat_ratio = 0.25 if goal == "weight_loss" else (0.20 if goal == "muscle_gain" else 0.22)
+
+        for meal_time, meal in daily_plan.items():
+            if meal_time not in meal_weights:
+                continue
+            calories = calorie_targets[meal_time]
+            protein = protein_targets[meal_time]
+            remaining_cals = max(0, calories - protein * 4)
+            carbs = round((remaining_cals * carb_ratio) / 4, 1)
+            fat = round((remaining_cals * (1 - carb_ratio)) / 9, 1)
+            meal["calories"] = int(round(calories))
+            meal["protein"] = round(protein, 1)
+            meal["carbs"] = carbs
+            meal["fat"] = fat
+
+    @staticmethod
     def get_budget_tier(budget_preference: str) -> str:
         """
         Determine budget tier - returns the tier key
@@ -542,7 +590,8 @@ class IndianDietService:
         fitness_level: str,
         goal: str,
         budget_preference: str = "moderate",
-        diet_type: str = "veg"
+        diet_type: str = "veg",
+        target_weight: int | None = None,
     ) -> Dict[str, Any]:
         """
         Generate complete daily meal plan for Indian user.
@@ -550,14 +599,15 @@ class IndianDietService:
         goal adaptation, and budget control.
         """
         budget_tier = IndianDietService.get_budget_tier(budget_preference)
+        effective_goal = IndianDietService._resolve_effective_goal(goal, weight, target_weight)
         maintenance_calories = IndianDietService.calculate_tdee(weight, height_cm, age, fitness_level)
-        protein_min, protein_max = IndianDietService._goal_protein_range(goal, weight)
+        protein_min, protein_max = IndianDietService._goal_protein_range(effective_goal, weight)
         target_protein = round((protein_min + protein_max) / 2, 1)
-        target_calories = IndianDietService._goal_calorie_target(goal, maintenance_calories)
+        target_calories = IndianDietService._goal_calorie_target(effective_goal, maintenance_calories, weight, target_weight)
 
         # Fixed 4-meal structure with hostel/mess-friendly options.
         daily_plan = IndianDietService._get_structured_hostel_plan(budget_tier, diet_type)
-        adjustment_notes = IndianDietService._apply_goal_adjustments(daily_plan, goal, diet_type)
+        adjustment_notes = IndianDietService._apply_goal_adjustments(daily_plan, effective_goal, diet_type)
 
         daily_totals = {
             "calories": round(sum(m.get("calories", 0) for m in daily_plan.values()), 1),
@@ -594,8 +644,10 @@ class IndianDietService:
                 }
                 adjustment_notes.append(f"Added protein booster in dinner: {booster['name']} ({booster['portion']}).")
 
+        IndianDietService._normalize_daily_plan_to_targets(daily_plan, target_calories, target_protein, effective_goal)
+
         tier_info = BUDGET_TIERS[budget_tier]
-        diet_tips = IndianDietService.get_diet_tips(goal, budget_tier, weight)
+        diet_tips = IndianDietService.get_diet_tips(effective_goal, budget_tier, weight)
 
         if daily_totals["protein"] < protein_min:
             diet_tips.append(
@@ -606,7 +658,7 @@ class IndianDietService:
         if adjustment_notes:
             diet_tips.extend(adjustment_notes)
 
-        carb_ratio = 0.68 if goal == "weight_loss" else (0.72 if goal == "muscle_gain" else 0.70)
+        carb_ratio = 0.68 if effective_goal == "weight_loss" else (0.72 if effective_goal == "muscle_gain" else 0.70)
         protein_calories = target_protein * 4
         remaining_cals = max(0, target_calories - protein_calories)
         target_carbs = round((remaining_cals * carb_ratio) / 4, 1)
@@ -621,6 +673,12 @@ class IndianDietService:
                 "protein": target_protein,
                 "carbs": target_carbs,
                 "fat": target_fat,
+            },
+            "goal_context": {
+                "selected_goal": goal,
+                "effective_goal": effective_goal,
+                "target_weight": target_weight,
+                "reason": "Lean recomposition plan used because the target weight is lower than the current weight.",
             },
             "budget_tier": {
                 "name": tier_info["name"],
@@ -639,7 +697,7 @@ class IndianDietService:
     @staticmethod
     def _goal_protein_range(goal: str, weight: int) -> Tuple[float, float]:
         mapping = {
-            "weight_loss": (1.8, 2.2),
+            "weight_loss": (1.9, 2.3),
             "maintenance": (1.5, 1.8),
             "muscle_gain": (1.6, 2.0),
             "muscle_endurance": (1.6, 1.9),
@@ -648,7 +706,11 @@ class IndianDietService:
         return weight * low, weight * high
 
     @staticmethod
-    def _goal_calorie_target(goal: str, maintenance_calories: int) -> int:
+    def _goal_calorie_target(goal: str, maintenance_calories: int, current_weight: int | None = None, target_weight: int | None = None) -> int:
+        if goal == "weight_loss" and current_weight is not None and target_weight is not None and target_weight < current_weight:
+            deficit = min(600, max(260, int((current_weight - target_weight) * 85)))
+            return IndianDietService._clamp(maintenance_calories - deficit, 1750, 2150)
+
         ranges = {
             "weight_loss": (1800, 2200, -350),
             "maintenance": (2200, 2600, 0),
