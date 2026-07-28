@@ -3,6 +3,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import UserDetailsPage from "./pages/UserDetailsPage";
 import PlanResultPage from "./pages/PlanResultPage";
 import AppShowcasePage from "./pages/AppShowcasePage";
@@ -39,6 +40,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/about" element={<AppShowcasePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route path="/details" element={<UserDetailsPage />} />
             <Route path="/result" element={<PlanResultPage />} />
           </Routes>

@@ -17,6 +17,7 @@ import type { FormEvent, KeyboardEvent } from "react";
 import { Check, Close, Visibility, VisibilityOff } from "@mui/icons-material";
 import { useTheme } from "../context/ThemeContext";
 import { getTheme } from "../theme/indianTheme";
+import axios from "../api/axiosInstance";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const rememberedEmailKey = "nutrisenseRememberedEmail";
@@ -130,11 +131,14 @@ const LoginPage = () => {
 
     try {
       setIsLoading(true);
-
-      // Temporary auth flow until backend login endpoint is added.
-      await new Promise((resolve) => setTimeout(resolve, 900));
       const normalizedEmail = email.trim().toLowerCase();
+      const response = await axios.post("/auth/login", {
+        email: normalizedEmail,
+        password,
+      });
+
       localStorage.setItem("nutrisenseUser", normalizedEmail);
+      localStorage.setItem("nutrisenseAuth", JSON.stringify(response.data.user));
 
       if (rememberMe) {
         localStorage.setItem(rememberedEmailKey, normalizedEmail);
@@ -147,8 +151,11 @@ const LoginPage = () => {
       window.dispatchEvent(new Event("nutrisense-auth-changed"));
 
       navigate("/details");
-    } catch {
-      setServerError("Login failed. Please try again.");
+    } catch (error: unknown) {
+      const message =
+        (error as { response?: { data?: { detail?: string } } }).response?.data?.detail ||
+        "Login failed. Please try again.";
+      setServerError(message);
     } finally {
       setIsLoading(false);
     }
@@ -340,16 +347,35 @@ const LoginPage = () => {
           >
             Log in to continue your budget-friendly fitness journey.
           </Typography>
-
           {serverError && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {serverError}
             </Alert>
           )}
-
+          <Typography
+            sx={{
+              fontSize: "0.92rem",
+              color: isDark ? "rgba(255,255,255,0.72)" : "rgba(0,0,0,0.6)",
+              mb: 2,
+              display: "block",
+            }}
+            >
+              Don’t have an account?{' '}
+              <Box
+                component="span"
+                onClick={() => navigate('/signup')}
+                sx={{
+                  color: accentColor,
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  '&:hover': { opacity: 0.85 },
+                }}
+              >
+                Sign up
+              </Box>
+            </Typography>
           <TextField
             fullWidth
-            type="email"
             label="Email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
