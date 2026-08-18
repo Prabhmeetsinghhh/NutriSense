@@ -112,12 +112,16 @@ const PersonalCoachPanel = ({ email, userProfile, currentPlan, isDark }: Persona
       try {
         const response = await axios.get(`/ml/personal-coach/${email}/history?limit=12`);
         if (response.data.status === "success") {
-          const loaded = (response.data.messages ?? []).map((item: any) => ({
-            id: item.id,
-            role: item.role,
-            content: item.content,
-            created_at: item.created_at,
-          }));
+          const rawMessages = Array.isArray(response.data.messages) ? response.data.messages : [];
+          const loaded = rawMessages.map((item) => {
+            const messageItem = item as CoachMessage;
+            return {
+              id: messageItem.id || `${Date.now()}-msg`,
+              role: messageItem.role || "assistant",
+              content: messageItem.content || "",
+              created_at: messageItem.created_at,
+            };
+          });
           setMessages(loaded.length > 0 ? loaded : [
             {
               id: "welcome",

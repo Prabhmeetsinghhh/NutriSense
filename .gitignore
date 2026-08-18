@@ -20,3 +20,15 @@ DietAndFitnessPlanner-FE/dist/
 # Temporary document processing folders
 *_tmp/
 .env
+
+# Large zip archives
+*.zip
+Submission_Package.zip
+
+# VS Code settings
+.vscode/
+
+# Node modules anywhere across all folders
+**/node_modules/
+**/dist/
+**/build/

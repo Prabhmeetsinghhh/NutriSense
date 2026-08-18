@@ -18,33 +18,41 @@ import {
 } from "@mui/icons-material";
 import axios from "../api/axiosInstance";
 
+type UserProfile = {
+  weight: number;
+  age: number;
+  target_weight?: number;
+  fitness_level: string;
+  goal: string;
+  injury_notes?: string[];
+  injury_history?: Array<Record<string, unknown>>;
+  avoid_exercises?: string[];
+  disliked_exercises?: string[];
+  equipment_access?: string[];
+  preferred_muscle_groups?: string[];
+  difficulty_preference?: string;
+  prefer_compound?: boolean;
+  performance_history?: Array<Record<string, unknown>>;
+};
+
+type RecommendationSection = Record<string, unknown>;
+
+type ExerciseRecommendation = Record<string, unknown>;
+
+type SwapRecommendation = Record<string, unknown>;
+
 interface MLRecommendationsPanelProps {
   email: string;
-  userProfile: {
-    weight: number;
-    age: number;
-    target_weight?: number;
-    fitness_level: string;
-    goal: string;
-    injury_notes?: string[];
-    injury_history?: any[];
-    avoid_exercises?: string[];
-    disliked_exercises?: string[];
-    equipment_access?: string[];
-    preferred_muscle_groups?: string[];
-    difficulty_preference?: string;
-    prefer_compound?: boolean;
-    performance_history?: any[];
-  };
+  userProfile: UserProfile;
   isDark: boolean;
 }
 
 interface Recommendations {
-  nutrition: any;
-  meal_timing: any;
-  exercise_personalization: any;
-  goal_achievement: any;
-  workout_blueprint?: any;
+  nutrition: RecommendationSection;
+  meal_timing: RecommendationSection;
+  exercise_personalization: RecommendationSection;
+  goal_achievement: RecommendationSection;
+  workout_blueprint?: RecommendationSection;
 }
 
 const MLRecommendationsPanel = ({
@@ -363,36 +371,39 @@ const MLRecommendationsPanel = ({
         )}
 
         <Stack spacing={0.8}>
-          {exercises.slice(0, 6).map((exercise: any, idx: number) => (
-            <Paper
-              key={`${exercise?.id || idx}`}
-              sx={{
-                p: 1.1,
-                borderRadius: "10px",
-                background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)",
-                border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.04)",
-              }}
-            >
-              <Stack direction="row" justifyContent="space-between" spacing={1} sx={{ mb: 0.4 }}>
-                <Typography sx={{ fontWeight: 700, fontSize: "0.92rem" }}>
-                  {exercise?.name || String(exercise).replace(/_/g, " ")}
+          {exercises.slice(0, 6).map((exercise, idx: number) => {
+            const exerciseRecord = exercise as ExerciseRecommendation;
+            return (
+              <Paper
+                key={`${exerciseRecord?.id ?? idx}`}
+                sx={{
+                  p: 1.1,
+                  borderRadius: "10px",
+                  background: isDark ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.6)",
+                  border: isDark ? "1px solid rgba(255,255,255,0.06)" : "1px solid rgba(0,0,0,0.04)",
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" spacing={1} sx={{ mb: 0.4 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: "0.92rem" }}>
+                    {String(exerciseRecord?.name ?? exerciseRecord?.title ?? String(exerciseRecord)).replace(/_/g, " ")}
+                  </Typography>
+                  {typeof exerciseRecord?.score === "number" && (
+                    <Chip
+                      size="small"
+                      label={`${Math.round((exerciseRecord.score as number) * 10) / 10}`}
+                      sx={{ height: 22, fontSize: "0.72rem", background: accentColor, color: isDark ? "#111" : "#fff" }}
+                    />
+                  )}
+                </Stack>
+                <Typography sx={{ fontSize: "0.82rem", color: isDark ? "rgba(248,246,240,0.76)" : "rgba(0, 0, 0, 0.68)", mb: 0.3 }}>
+                  {String(exerciseRecord?.sets_reps ?? exerciseRecord?.phase ?? "Main work")}
                 </Typography>
-                {typeof exercise?.score === "number" && (
-                  <Chip
-                    size="small"
-                    label={`${Math.round(exercise.score * 10) / 10}`}
-                    sx={{ height: 22, fontSize: "0.72rem", background: accentColor, color: isDark ? "#111" : "#fff" }}
-                  />
-                )}
-              </Stack>
-              <Typography sx={{ fontSize: "0.82rem", color: isDark ? "rgba(248,246,240,0.76)" : "rgba(0, 0, 0, 0.68)", mb: 0.3 }}>
-                {exercise?.sets_reps || exercise?.phase || "Main work"}
-              </Typography>
-              <Typography sx={{ fontSize: "0.8rem", color: isDark ? "rgba(248,246,240,0.68)" : "rgba(0, 0, 0, 0.62)" }}>
-                {exercise?.why || exercise?.description || "Selected for balanced progression."}
-              </Typography>
-            </Paper>
-          ))}
+                <Typography sx={{ fontSize: "0.8rem", color: isDark ? "rgba(248,246,240,0.68)" : "rgba(0, 0, 0, 0.62)" }}>
+                  {String(exerciseRecord?.why ?? exerciseRecord?.description ?? "Selected for balanced progression.")}
+                </Typography>
+              </Paper>
+            );
+          })}
         </Stack>
 
         {!!safetyNotes.length && (
@@ -413,11 +424,14 @@ const MLRecommendationsPanel = ({
             <Typography sx={{ fontSize: "0.85rem", fontWeight: 700, color: accentColor, mb: 0.4 }}>
               Safer Substitutions
             </Typography>
-            {swaps.slice(0, 4).map((item: any, idx: number) => (
-              <Typography key={`swap-${idx}`} sx={{ fontSize: "0.84rem", color: isDark ? "rgba(248,246,240,0.78)" : "rgba(0, 0, 0, 0.68)" }}>
-                • {item.exercise} → {item.safer_alternative}
-              </Typography>
-            ))}
+            {swaps.slice(0, 4).map((item, idx: number) => {
+              const swapItem = item as SwapRecommendation;
+              return (
+                <Typography key={`swap-${idx}`} sx={{ fontSize: "0.84rem", color: isDark ? "rgba(248,246,240,0.78)" : "rgba(0, 0, 0, 0.68)" }}>
+                  • {String(swapItem.exercise ?? "")} → {String(swapItem.safer_alternative ?? "")}
+                </Typography>
+              );
+            })}
           </Box>
         )}
 
@@ -535,18 +549,21 @@ const MLRecommendationsPanel = ({
 
         <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
           {exercises && exercises.length > 0 ? (
-            exercises.slice(0, 8).map((exercise: any, idx: number) => (
-              <Chip
-                key={idx}
-                label={(exercise?.name || String(exercise)).replace(/_/g, " ")}
-                sx={{
-                  background: isDark ? "rgba(212,175,55,0.15)" : "rgba(43, 95, 58, 0.1)",
-                  color: accentColor,
-                  fontWeight: 600,
-                  borderRadius: "20px",
-                }}
-              />
-            ))
+            exercises.slice(0, 8).map((exercise, idx: number) => {
+              const exerciseRecord = exercise as ExerciseRecommendation;
+              return (
+                <Chip
+                  key={idx}
+                  label={String(exerciseRecord?.name ?? exerciseRecord?.title ?? String(exerciseRecord)).replace(/_/g, " ")}
+                  sx={{
+                    background: isDark ? "rgba(212,175,55,0.15)" : "rgba(43, 95, 58, 0.1)",
+                    color: accentColor,
+                    fontWeight: 600,
+                    borderRadius: "20px",
+                  }}
+                />
+              );
+            })
           ) : (
             <Typography sx={{ fontSize: "0.9rem" }}>Loading recommendations...</Typography>
           )}

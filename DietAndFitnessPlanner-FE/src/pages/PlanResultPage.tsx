@@ -50,14 +50,14 @@ type FormState = {
   avoid_exercises?: string;
   equipment_access?: string;
   injuryNotes?: string[];
-  injuryHistory?: any[];
+  injuryHistory?: string[] | Array<Record<string, unknown>>;
   avoidExercises?: string[];
   dislikedExercises?: string[];
   equipmentAccess?: string[];
   preferredMuscleGroups?: string[];
   difficultyPreference?: string;
   preferCompound?: boolean;
-  performanceHistory?: any[];
+  performanceHistory?: Array<Record<string, unknown>>;
 };
 
 type MealBreakdown = {
@@ -203,7 +203,7 @@ const PlanResultPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [openMeals, setOpenMeals] = useState<Record<string, boolean>>({});
   const [openWorkouts, setOpenWorkouts] = useState<Record<string, boolean>>({});
-  const [exercises, setExercises] = useState<any[]>([]);
+  const [exercises, setExercises] = useState<Array<Record<string, unknown>>>([]);
   const [exercisesLoading, setExercisesLoading] = useState(false);
 
   useEffect(() => {
@@ -684,9 +684,14 @@ const PlanResultPage = () => {
                 <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}><CircularProgress sx={{ color: accentColor }} /></Box>
               ) : (
                 <Grid container spacing={1.5}>
-                  {exercises.map((exercise: any) => (
-                    <Grid size={{ xs: 12, md: 6 }} key={exercise.id}><ExerciseVideoCard exercise={exercise} isDark={isDark} email={state.email || ""} /></Grid>
-                  ))}
+                  {exercises.map((exercise) => {
+                    const exerciseItem = exercise as Record<string, unknown>;
+                    return (
+                      <Grid size={{ xs: 12, md: 6 }} key={String(exerciseItem.id ?? exerciseItem.name ?? "exercise-")}> 
+                        <ExerciseVideoCard exercise={exerciseItem} isDark={isDark} email={state.email || ""} />
+                      </Grid>
+                    );
+                  })}
                 </Grid>
               )}
             </Box>
